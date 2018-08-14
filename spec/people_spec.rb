@@ -8,95 +8,95 @@ module Peoplw
 
     it "should parse first initial, last name" do
       name = @np.parse( "M ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 1
-      name[:first].should == "M"
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 1
+      expect(name[:first]).to eq "M"
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first initial, middle initial, last name" do
       name = @np.parse( "M E ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 2
-      name[:first].should == "M"
-      name[:middle].should == 'E'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 2
+      expect(name[:first]).to eq "M"
+      expect(name[:middle]).to eq 'E'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first initial with period, middle initial with period, last name" do
       name = @np.parse( "M.E. ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 3
-      name[:first].should == "M"
-      name[:middle].should == 'E'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 3
+      expect(name[:first]).to eq "M"
+      expect(name[:middle]).to eq 'E'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first initial, two middle initials, last name" do
       name = @np.parse( "M E E  ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 4
-      name[:first].should == "M"
-      name[:middle].should == 'E E'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 4
+      expect(name[:first]).to eq "M"
+      expect(name[:middle]).to eq 'E E'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first initial, middle name, last name" do
       name = @np.parse( "M EDWARD ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 5
-      name[:first].should == "M"
-      name[:middle].should == 'Edward'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 5
+      expect(name[:first]).to eq "M"
+      expect(name[:middle]).to eq 'Edward'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first name, middle initial, last name" do
       name = @np.parse( "MATTHEW E ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 6
-      name[:first].should == "Matthew"
-      name[:middle].should == 'E'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 6
+      expect(name[:first]).to eq "Matthew"
+      expect(name[:middle]).to eq 'E'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first name, two middle initials, last name" do
       name = @np.parse( "MATTHEW E E ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 7
-      name[:first].should == "Matthew"
-      name[:middle].should == 'E E'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 7
+      expect(name[:first]).to eq "Matthew"
+      expect(name[:middle]).to eq 'E E'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first name, two middle initials with periods, last name" do
       name = @np.parse( "MATTHEW E.E. ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 8
-      name[:first].should == "Matthew"
-      name[:middle].should == 'E.E.'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 8
+      expect(name[:first]).to eq "Matthew"
+      expect(name[:middle]).to eq 'E.E.'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first name, last name" do
       name = @np.parse( "MATTHEW ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 9
-      name[:first].should == "Matthew"
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 9
+      expect(name[:first]).to eq "Matthew"
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should parse first name, middle name, last name" do
       name = @np.parse( "MATTHEW EDWARD ERICSON" )
-      name[:parsed].should be true
-      name[:parse_type].should == 10
-      name[:first].should == "Matthew"
-      name[:middle].should == 'Edward'
-      name[:last].should == "Ericson"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 10
+      expect(name[:first]).to eq "Matthew"
+      expect(name[:middle]).to eq 'Edward'
+      expect(name[:last]).to eq "Ericson"
     end
 
     it 'does not parse two middle names' do
       name = @np.parse( "MATTHEW EDWARD RICHARD ERICSON" )
-      name[:parsed].should be false
+      expect(name[:parsed]).to be false
     end
 
 =begin
@@ -104,11 +104,11 @@ module Peoplw
       pending( "Doesn't correctly parse two middle names" ) do
         name = @np.parse( "MATTHEW E. SHEIE ERICSON" )
         puts name.inspect
-        name[:parsed].should be true
-        name[:parse_type].should == 11
-        name[:first].should == "Matthew"
-        name[:middle].should == 'E. Sheie'
-        name[:last].should == "Ericson"
+      expect(  name[:parsed]).to be true
+      expect(  name[:parse_type]).to eq 11
+      expect(  name[:first]).to eq "Matthew"
+      expect(  name[:middle]).to eq 'E. Sheie'
+      expect(  name[:last]).to eq "Ericson"
       end
     end
 =end
@@ -122,31 +122,31 @@ module Peoplw
 
     it "should parse multiple first names and last name" do
       name = @np.parse( "Joe and Jill Hill" )
-      name[:parsed].should == true
-      name[:multiple].should be true
-      name[:parsed2].should be true
-      name[:parse_type].should == 9
-      name[:first2].should == "Jill"
+      expect(name[:parsed]).to eq true
+      expect(name[:multiple]).to be true
+      expect(name[:parsed2]).to be true
+      expect(name[:parse_type]).to eq 9
+      expect(name[:first2]).to eq "Jill"
     end
 
     it "should parse multiple first names, middle initial, last name" do
       name = @np.parse( "Joe and Jill S Hill" )
-      name[:parsed].should == true
-      name[:multiple].should be true
-      name[:parsed2].should be true
-      name[:parse_type].should == 9
-      name[:first2].should == "Jill"
-      name[:middle2].should == 'S'
+      expect(name[:parsed]).to eq true
+      expect(name[:multiple]).to be true
+      expect(name[:parsed2]).to be true
+      expect(name[:parse_type]).to eq 9
+      expect(name[:first2]).to eq "Jill"
+      expect(name[:middle2]).to eq 'S'
     end
 
     it "should parse multiple first names, middle initial, last name" do
       name = @np.parse( "Joe S and Jill Hill" )
-      name[:parsed].should == true
-      name[:multiple].should be true
-      name[:parsed2].should be true
-      name[:parse_type].should == 6
-      name[:first2].should == "Jill"
-      name[:middle].should == 'S'
+      expect(name[:parsed]).to eq true
+      expect(name[:multiple]).to be true
+      expect(name[:parsed2]).to be true
+      expect(name[:parse_type]).to eq 6
+      expect(name[:first2]).to eq "Jill"
+      expect(name[:middle]).to eq 'S'
     end
   end
 
@@ -157,16 +157,16 @@ module Peoplw
 
     it "should parse multiple-word last name" do
       name = @np.parse( "Matthew De La Hoya" )
-      name[:parsed].should be true
-      name[:parse_type].should == 9
-      name[:last].should == "De La Hoya"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 9
+      expect(name[:last]).to eq "De La Hoya"
     end
 
     it "should parse last name with cammel case" do
       name = @np.parse( "Matthew McIntosh" )
-      name[:parsed].should be true
-      name[:parse_type].should == 9
-      name[:last].should == "McIntosh"
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 9
+      expect(name[:last]).to eq "McIntosh"
     end
   end
 
@@ -177,53 +177,53 @@ module Peoplw
 
     it "should parse name with the suffix 'Jr'" do
       name = @np.parse( "Matthew E Ericson Jr" )
-      name[:parsed].should be true
-      name[:suffix].should == "Jr"
+      expect(name[:parsed]).to be true
+      expect(name[:suffix]).to eq "Jr"
     end
 
     it "should parse name with a roman numeral suffix" do
       name = @np.parse( "Matthew E Ericson III" )
-      name[:parsed].should be true
-      name[:suffix].should == "III"
+      expect(name[:parsed]).to be true
+      expect(name[:suffix]).to eq "III"
     end
 
 #   it "should parse name with an ordinal suffix" do
 #     name = @np.parse( "Matthew E Ericson 2nd" )
-#     name[:parsed].should be true
-#     name[:suffix].should == "2nd"
+#     expect(name[:parsed]).to be true
+#     expect(name[:suffix]).to eq "2nd"
 #   end
 
     it "should parse name with a suffix with periods" do
       name = @np.parse( "Matthew E Ericson M.D." )
-      name[:parsed].should be true
-      name[:suffix].should == "M.D."
+      expect(name[:parsed]).to be true
+      expect(name[:suffix]).to eq "M.D."
     end
 
     it "should parse name with a title" do
       name = @np.parse( "Mr Matthew E Ericson" )
-      name[:parsed].should be true
-      name[:title].should == "Mr "
+      expect(name[:parsed]).to be true
+      expect(name[:title]).to eq "Mr "
     end
 
     it "should parse name with a title with a period" do
       name = @np.parse( "Mr. Matthew E Ericson" )
-      name[:parsed].should be true
-      name[:title].should == "Mr. "
+      expect(name[:parsed]).to be true
+      expect(name[:title]).to eq "Mr. "
     end
 
     it "should parse name with a title, first initial" do
       name = @np.parse( "Rabbi M Edward Ericson" )
-      name[:parsed].should be true
-      name[:parse_type].should == 5
-      name[:title].should == "Rabbi "
-      name[:first].should == 'M'
+      expect(name[:parsed]).to be true
+      expect(name[:parse_type]).to eq 5
+      expect(name[:title]).to eq "Rabbi "
+      expect(name[:first]).to eq 'M'
     end
 
     it "should parse 1950s married couple name" do
       name = @np.parse( "Mr. and Mrs. Matthew E Ericson" )
-      name[:parsed].should be true
-      name[:title].should == "Mr. And Mrs. "
-      name[:first].should == "Matthew"
+      expect(name[:parsed]).to be true
+      expect(name[:title]).to eq "Mr. And Mrs. "
+      expect(name[:first]).to eq "Matthew"
     end
   end
 
@@ -231,22 +231,22 @@ module Peoplw
     it "should change upper case to proper case" do
       proper_np = People::NameParser.new( :case_mode => 'proper' )
       name = proper_np.parse( "MATTHEW ERICSON" )
-      name[:first].should == "Matthew"
-      name[:last].should == "Ericson"
+      expect(name[:first]).to eq "Matthew"
+      expect(name[:last]).to eq "Ericson"
     end
 
     it "should change proper case to upper case" do
       proper_np = People::NameParser.new( :case_mode => 'upper' )
       name = proper_np.parse( "Matthew Ericson" )
-      name[:first].should == "MATTHEW"
-      name[:last].should == "ERICSON"
+      expect(name[:first]).to eq "MATTHEW"
+      expect(name[:last]).to eq "ERICSON"
     end
 
     it "should leave case as is" do
       proper_np = People::NameParser.new( :case_mode => 'leave' )
       name = proper_np.parse( "mATTHEW eRicSon" )
-      name[:first].should == "mATTHEW"
-      name[:last].should == "eRicSon"
+      expect(name[:first]).to eq "mATTHEW"
+      expect(name[:last]).to eq "eRicSon"
     end
   end
 end

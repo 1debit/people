@@ -1,5 +1,22 @@
+#!/usr/bin/env rake
+require "bundler/gem_tasks"
+
 require 'rubygems'
 require 'rake'
+
+require 'rspec/core/rake_task'
+
+desc "Run RSpec"
+RSpec::Core::RakeTask.new do |t|
+  t.verbose = false
+end
+
+desc "Run specs for all test cases"
+task :spec_all do
+  system "rake spec"
+end
+
+task :default => :spec
 
 begin
   require 'jeweler'
@@ -37,11 +54,10 @@ rescue LoadError
 end
 
 
-task :default => :test
-
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
+require 'rdoc/task'
+RDoc::Task.new do |rdoc|
   if File.exist?('VERSION.yml')
+    require 'yaml'
     config = YAML.load(File.read('VERSION.yml'))
     version = "#{config[:major]}.#{config[:minor]}.#{config[:patch]}"
   else

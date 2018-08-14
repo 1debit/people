@@ -1,3 +1,5 @@
+require 'people/version'
+
 module People
 
   # Class to parse names into their components like first, middle, last, etc.
