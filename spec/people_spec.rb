@@ -259,13 +259,14 @@ module People
     end
 =begin
     it "should parse multiple first names and last name with UTF-8 characters" do
-      name = @np.parse("MARÍA AND JOSÉ GARCÍA-D'ANGELO" )
+      name = @np.parse("MARÍA AND JOSÉ GARCÍA-D'ANGELO III" )
       expect(name[:parsed]).to eq true
       expect(name[:multiple]).to be true
       expect(name[:parsed2]).to be true
       expect(name[:first]).to eq 'María'
       expect(name[:first2]).to eq 'José'
-      expect(  name[:last]).to eq "García-D'Angelo"
+      expect(name[:last]).to eq "García-D'Angelo"
+      expect(name[:suffix]).to eq "III"
       expect(name[:parse_type]).to eq 9
     end
 =end
