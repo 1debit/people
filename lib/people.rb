@@ -1,6 +1,11 @@
+require 'people/version' unless defined?(People::VERSION)
+
 module People
 
   # Class to parse names into their components like first, middle, last, etc.
+
+  # How it works: https://xkcd.com/208/
+
   class NameParser
 
     attr_reader :seen, :parsed
@@ -8,8 +13,7 @@ module People
     # Creates a name parsing object
     def initialize( opts={} )
 
-      @name_chars = "A-Za-z0-9\\-\\'"
-      @nc = @name_chars
+      @nc = @name_chars = 'A-Za-z\\-'
 
       @opts = {
         :strip_mr   => true,
@@ -17,8 +21,6 @@ module People
         :case_mode  => 'proper',
         :couples    => false
       }.merge! opts
-
-      ## constants
 
       @titles = [ 'Mr\.? and Mrs\.? ',
                   'Mrs\.? ',
@@ -103,7 +105,6 @@ module People
                   'Ald(\.|erman)? '
                 ];
 
-
       @suffixes = [
                    'Jn?r\.?,? Esq\.?',
                    'Sn?r\.?,? Esq\.?',
@@ -124,6 +125,8 @@ module People
                    'Ph\.?d\.?',
                    'C\.?P\.?A\.?',
 
+                   '1st', '2nd', '3rd', '\d+th', # numeric instead of roman
+
                    'XI{1,3}',            # 11th, 12th, 13th
                    'X',                  # 10th
                    'IV',                 # 4th
@@ -135,25 +138,16 @@ module People
                    'D.?M\.?D\.?'         # M.D.
                   ];
 
-      @last_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc}]+)))";
-      @mult_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc} ]+)))";
-
       @seen = 0
       @parsed = 0;
-
     end
 
     def parse( name )
-
       @seen += 1
-
       clean  = ''
-      out = Hash.new( "" )
-
+      out = Hash.new('')
       out[:orig]  = name.dup
-
       name = name.dup
-
       name = clean( name )
 
       # strip trailing suffices
@@ -163,27 +157,21 @@ module People
         name.gsub!( sfx_p, "\\1 \\2" )
       end
 
-      name.gsub!( /Mr\.? \& Mrs\.?/i, "Mr. and Mrs." )
+      name.gsub!( /Mr\.? \& Mrs\.?/i, 'Mr. and Mrs.' )
 
       # Flip last and first if contain comma
-      name.gsub!( /;/, "" )
-      name.gsub!( /(.+),(.+)/, "\\2 ;\\1" )
-
-
-      name.gsub!( /,/, "" )
+      name.gsub!( /;/, '' )
+      name.gsub!( /(.+),(.+)/, "\\2 \\1" )
+      name.gsub!( /,/, '' )
       name.strip!
 
       if @opts[:couples]
-        name.gsub!( / +and +/i, " \& " )
+        name.gsub!( /\s+and\s+/i, ' & ' )
       end
-
-
 
       if @opts[:couples] && name.match( /\&/ )
 
-        names = name.split( / *& */ )
-        a = names[0]
-        b = names[1]
+        a, b, _rest = name.split( / *& */ )
 
         out[:title2] = get_title( b );
         out[:suffix2] = get_suffix( b );
@@ -198,25 +186,25 @@ module People
         out[:middle2] = parts[3]
         out[:last] = parts[4]
 
+
         out[:title] = get_title( a );
         out[:suffix] = get_suffix( a );
 
         a.strip!
-        a += " "
+        a += ' '
 
         parts = get_name_parts( a, true )
 
         out[:parsed] = parts[0]
         out[:parse_type] = parts[1]
         out[:first] = parts[2]
-        out[:middle] = parts[3]
+        out[:middle] = parts[4]
 
         if out[:parsed] && out[:parsed2]
           out[:multiple] = true
         else
-          out = Hash.new( "" )
+          out = Hash.new( '' )
         end
-
 
       else
 
@@ -230,7 +218,6 @@ module People
         out[:first] = parts[2]
         out[:middle] = parts[3]
         out[:last] = parts[4]
-
       end
 
 
@@ -249,55 +236,43 @@ module People
 
       end
 
-      if out[:parsed]
-        @parsed += 1
-      end
+      @parsed += 1 if out[:parsed]
 
       out[:clean] = name
 
-
-
-
-
       return {
-        :title       => "",
-        :first       => "",
-        :middle      => "",
-        :last        => "",
-        :suffix      => "",
+        :title       => '',
+        :first       => '',
+        :middle      => '',
+        :last        => '',
+        :suffix      => '',
 
-        :title2      => "",
-        :first2      => "",
-        :middle2     => "",
-        :suffix2     => "",
+        :title2      => '',
+        :first2      => '',
+        :middle2     => '',
+        :suffix2     => '',
 
-        :clean       => "",
-
-        :parsed      => false,
-        :parse_type  => "",
+        :clean       => '',
 
         :parsed      => false,
-        :parse_type  => "",
+        :parse_type  => '',
 
         :parsed2     => false,
-        :parse_type2 => "",
+        :parse_type2 => '',
 
         :multiple    => false
       }.merge( out )
-
     end
 
+    private
 
     def clean( s )
+      # IMPORTANT: we DO NOT want to remove "illegal" characters here, because it would be stripping off valid UTF-8 characters
 
-      # remove illegal characters
-      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, "" )
-      # remove repeating spaces
-      s.gsub!( /  +/, " " )
-      s.gsub!( /\s+/, " " )
+      # squish repeating spaces
+      s.gsub!( /\s+/, ' ' )
       s.strip!
       s
-
     end
 
     def get_title( name )
@@ -305,15 +280,12 @@ module People
       @titles.each do |title|
         title_p = Regexp.new( "^(#{title})(.+)", true )
         if m = name.match( title_p )
-
           title = m[1]
           name.replace( m[-1].strip )
-          return title
+          return title.strip
         end
-
       end
-
-      return ""
+      return ''
     end
 
     def get_suffix( name )
@@ -322,127 +294,63 @@ module People
         sfx_p = Regexp.new( "(.+) (#{sfx})$", true )
         if name.match( sfx_p )
           name.replace $1.strip
-          suffix = $2
-          return $2
+          return $2.strip # return the suffix
         end
-
       end
-
-      return ""
+      return ''
     end
 
     def get_name_parts( name, no_last_name = false )
-
-      first  = ""
-      middle = ""
-      last   = ""
-
-      if no_last_name
-        last_name_p = ''
-        mult_name_p = ''
-      else
-        last_name_p = @last_name_p
-        mult_name_p = @mult_name_p
-      end
+      first  = ''
+      middle = ''
+      last   = ''
 
       parsed = false
 
-      # M ERICSON
-      if name.match( /^([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = '';
-        last   = $2;
+      # FIRST strip-off the last name
+      if /(?<ln>((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|V[ao]n De[nr]) )?([\p{Word}\-\.\']+))))$/i =~ name
+        last = ln
+        name.slice!(ln)
+        name.strip!
         parsed = true
-        parse_type = 1;
+        parse_type = 0
 
-        # M E ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 2;
+        # THEN analyze the remaining names
+        if /^(?<fn>[\p{Word}\-\.]+)[\s+\.](?<mn>([\p{Word}\-\.]+\s*)+)\s*$/ =~ name
+          first = fn
+          middle = mn
 
-        # M.E. ERICSON
-      elsif name.match( /^([A-Za-z])\.([A-Za-z])\. (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 3;
+        elsif  /^(?<fn>[\p{Word}\-\.]+)$/ =~ name
+          first = fn
 
-        # M E E ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2 + ' ' + $3;
-        last   = $4;
-        parsed = true
-        parse_type = 4;
+        else
+#          binding.pry
+        end
 
-        # M EDWARD ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([#{@nc}]+) (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
+      elsif  /^(?<fn>[\p{Word}\-\.]+)[\s+\.](?<mn>([\p{Word}\-\.]+\s*)+)\s+(?<ln>[\p{Word}\-\.]+)$/ =~ name
+        first = fn
+        middle = mn
+        last = ln
         parsed = true
-        parse_type = 5;
+        parse_type = 97
 
-        # MATTHEW E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
+      # as a fall-back -- try first last
+      elsif  /^(?<fn>[\p{Word}\-\.]+)[\s+\.](?<ln>[\p{Word}\-\.]+)\s*$/ =~ name
+        first = fn
+        last = ln
         parsed = true
-        parse_type = 6;
+        parse_type = 98
 
-        # MATTHEW E E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2 + ' ' + $3;
-        last   = $4;
+      elsif  /^(?<fn>[\p{Word}\-\.]+)\s*$/ =~ name # used for Jack and Jill; parsing the first name only
+        first = fn
         parsed = true
-        parse_type = 7;
-
-        # MATTHEW E.E. ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z]\.[A-Za-z]\.) (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 8;
-
-        # MATTHEW ERICSON
-      elsif name.match( /^([#{@nc}]+) (#{last_name_p})$/i )
-        first  = $1;
-        middle = '';
-        last   = $2;
-        parsed = true
-        parse_type = 9;
-
-        # MATTHEW EDWARD ERICSON
-      elsif name.match( /^([#{@nc}]+) ([#{@nc}]+) (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 10;
-
-        # MATTHEW E. SHEIE ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ($multNamePat)$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 11;
+        parse_type = 99
       end
 
-      last.gsub!( /;/, "" )
+      last.gsub!( /;/, '' )
 
       return [ parsed, parse_type, first, middle, last ];
-
     end
-
-
 
     def proper ( name )
 
@@ -450,7 +358,7 @@ module People
 
       # Now uppercase first letter of every word. By checking on word boundaries,
       # we will account for apostrophes (D'Angelo) and hyphenated names
-      fixed.gsub!( /\b(\w+)/ ) { |m| m.match( /^[ixv]$+/i ) ? m.upcase :  m.capitalize }
+      fixed.gsub!( /\b(\p{Word}+)/ ) { |m| m.match( /^[ixv]+$/i ) ? m.upcase :  m.capitalize }
 
       # Name case Macs and Mcs
       # Exclude names with 1-2 letters after prefix like Mack, Macky, Mace
@@ -482,18 +390,15 @@ module People
         fixed.gsub!( /\b(Mc)([a-z]+)/i ) do |m|
           $1 + $2.capitalize
         end
-
       end
 
       # Exceptions (only 'Mac' name ending in 'o' ?)
       fixed.gsub!( /Macmurdo/i, 'MacMurdo' )
 
       return fixed
-
     end
 
   end
-
 
 end
 
