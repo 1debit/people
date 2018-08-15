@@ -59,4 +59,4 @@ Send suggestions to mericson at ericson dot net.
 
 # Copyright
 
-Copyright (c) 2009 Matthew Ericson. See LICENSE for details.
+Copyright (c) 2009 Matthew Ericson. See [LICENSE](https://github.com/1debit/people/blob/master/LICENSE) for details.
