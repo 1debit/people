@@ -13,7 +13,7 @@ module People
     # Creates a name parsing object
     def initialize( opts={} )
 
-      @nc = @name_chars = "A-Za-z\\-"
+      @nc = @name_chars = 'A-Za-z\\-'
 
       @opts = {
         :strip_mr   => true,
@@ -21,8 +21,6 @@ module People
         :case_mode  => 'proper',
         :couples    => false
       }.merge! opts
-
-      ## constants
 
       @titles = [ 'Mr\.? and Mrs\.? ',
                   'Mrs\.? ',
@@ -107,7 +105,6 @@ module People
                   'Ald(\.|erman)? '
                 ];
 
-
       @suffixes = [
                    'Jn?r\.?,? Esq\.?',
                    'Sn?r\.?,? Esq\.?',
@@ -141,25 +138,16 @@ module People
                    'D.?M\.?D\.?'         # M.D.
                   ];
 
-      @last_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|V[ao]n De[nr]) )?([#{@nc}]+)))"
-      @mult_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|V[ao]n De[nr]) )?([#{@nc} ]+)))"
-
       @seen = 0
       @parsed = 0;
-
     end
 
     def parse( name )
-
       @seen += 1
-
       clean  = ''
-      out = Hash.new( '' )
-
+      out = Hash.new('')
       out[:orig]  = name.dup
-
       name = name.dup
-
       name = clean( name )
 
       # strip trailing suffices
@@ -169,7 +157,7 @@ module People
         name.gsub!( sfx_p, "\\1 \\2" )
       end
 
-      name.gsub!( /Mr\.? \& Mrs\.?/i, "Mr. and Mrs." )
+      name.gsub!( /Mr\.? \& Mrs\.?/i, 'Mr. and Mrs.' )
 
       # Flip last and first if contain comma
       name.gsub!( /;/, '' )
@@ -218,7 +206,6 @@ module People
           out = Hash.new( '' )
         end
 
-
       else
 
         out[:title] = get_title( name );
@@ -231,7 +218,6 @@ module People
         out[:first] = parts[2]
         out[:middle] = parts[3]
         out[:last] = parts[4]
-
       end
 
 
@@ -250,9 +236,7 @@ module People
 
       end
 
-      if out[:parsed]
-        @parsed += 1
-      end
+      @parsed += 1 if out[:parsed]
 
       out[:clean] = name
 
@@ -278,22 +262,17 @@ module People
 
         :multiple    => false
       }.merge( out )
-
     end
 
+    private
 
     def clean( s )
+      # IMPORTANT: we DO NOT want to remove "illegal" characters here, because it would be stripping off valid UTF-8 characters
 
-      # IMPORTANT: we don't want to remove "illegal" characters, because it's stripping off valid UTF-8 characters
-=begin
-      # remove illegal characters
-      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, '' )
-=end
       # squish repeating spaces
       s.gsub!( /\s+/, ' ' )
       s.strip!
       s
-
     end
 
     def get_title( name )
@@ -301,14 +280,11 @@ module People
       @titles.each do |title|
         title_p = Regexp.new( "^(#{title})(.+)", true )
         if m = name.match( title_p )
-
           title = m[1]
           name.replace( m[-1].strip )
-          return title
+          return title.strip
         end
-
       end
-
       return ''
     end
 
@@ -318,28 +294,16 @@ module People
         sfx_p = Regexp.new( "(.+) (#{sfx})$", true )
         if name.match( sfx_p )
           name.replace $1.strip
-          suffix = $2
-          return $2
+          return $2.strip # return the suffix
         end
-
       end
-
       return ''
     end
 
     def get_name_parts( name, no_last_name = false )
-
       first  = ''
       middle = ''
       last   = ''
-
-      if no_last_name
-        last_name_p = ''
-        mult_name_p = ''
-      else
-        last_name_p = @last_name_p
-        mult_name_p = @mult_name_p
-      end
 
       parsed = false
 
@@ -381,16 +345,12 @@ module People
         first = fn
         parsed = true
         parse_type = 99
-
       end
 
       last.gsub!( /;/, '' )
 
       return [ parsed, parse_type, first, middle, last ];
-
     end
-
-
 
     def proper ( name )
 
@@ -430,18 +390,15 @@ module People
         fixed.gsub!( /\b(Mc)([a-z]+)/i ) do |m|
           $1 + $2.capitalize
         end
-
       end
 
       # Exceptions (only 'Mac' name ending in 'o' ?)
       fixed.gsub!( /Macmurdo/i, 'MacMurdo' )
 
       return fixed
-
     end
 
   end
-
 
 end
 
