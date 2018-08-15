@@ -3,6 +3,9 @@ require 'people/version'
 module People
 
   # Class to parse names into their components like first, middle, last, etc.
+
+  # How it works: https://xkcd.com/208/
+
   class NameParser
 
     attr_reader :seen, :parsed
@@ -10,8 +13,7 @@ module People
     # Creates a name parsing object
     def initialize( opts={} )
 
-      @name_chars = "A-Za-z0-9\\-\\'"
-      @nc = @name_chars
+      @nc = @name_chars = "A-Za-z\\-"
 
       @opts = {
         :strip_mr   => true,
@@ -126,6 +128,8 @@ module People
                    'Ph\.?d\.?',
                    'C\.?P\.?A\.?',
 
+                   '1st', '2nd', '3rd', '\d+th', # numeric instead of roman
+
                    'XI{1,3}',            # 11th, 12th, 13th
                    'X',                  # 10th
                    'IV',                 # 4th
@@ -137,8 +141,8 @@ module People
                    'D.?M\.?D\.?'         # M.D.
                   ];
 
-      @last_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc}]+)))";
-      @mult_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc} ]+)))";
+      @last_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|V[ao]n De[nr]) )?([#{@nc}]+)))"
+      @mult_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|V[ao]n De[nr]) )?([#{@nc} ]+)))"
 
       @seen = 0
       @parsed = 0;
@@ -257,10 +261,6 @@ module People
 
       out[:clean] = name
 
-
-
-
-
       return {
         :title       => "",
         :first       => "",
@@ -290,10 +290,9 @@ module People
     def clean( s )
 
       # remove illegal characters
-      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, "" )
-      # remove repeating spaces
-      s.gsub!( /  +/, " " )
-      s.gsub!( /\s+/, " " )
+#      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, "" ) # we don't want this, because it's stripping UTF-8 characters
+      # squish repeating spaces
+      s.gsub!( /\s+/, ' ' )
       s.strip!
       s
 
@@ -346,93 +345,167 @@ module People
 
       parsed = false
 
-      # M ERICSON
-      if name.match( /^([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = '';
-        last   = $2;
+      if name.match( /^([#{@nc}]+) (#{last_name_p})$/i )
+        first  = $1
+        middle = ''
+        last   = $2
         parsed = true
-        parse_type = 1;
-
-        # M E ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 2;
-
-        # M.E. ERICSON
-      elsif name.match( /^([A-Za-z])\.([A-Za-z])\. (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 3;
-
-        # M E E ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2 + ' ' + $3;
-        last   = $4;
-        parsed = true
-        parse_type = 4;
-
-        # M EDWARD ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([#{@nc}]+) (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
-        parsed = true
-        parse_type = 5;
+        parse_type = 9
 
         # MATTHEW E ERICSON
       elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
+        first  = $1
+        middle = $2
+        last   = $3
         parsed = true
-        parse_type = 6;
+        parse_type = 6
 
-        # MATTHEW E E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2 + ' ' + $3;
-        last   = $4;
+# it would be better to strip-off complicated lastnames first
+
+      elsif /(?<ln>((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|V[ao]n De[nr]) )?([\p{Word}\-\.]+))))$/i =~ name
+        last = ln
+        name.slice!(ln)
+        name.strip!
         parsed = true
-        parse_type = 7;
+        parse_type = 0
+
+        if /^(?<fn>[A-Za-z\-\.]+)[\s+\.](?<mn>([A-Za-z\-\.]+\s*)+)\s*$/ =~ name
+          first = fn
+          middle = mn
+        end
+
+      # just as a fall-back -- nothing should need this rule
+
+      elsif  /^(?<fn>[A-Za-z\-\.]+)[\s+\.](?<mn>([A-Za-z\-\.]+\s*)+)\s+(?<ln>[A-Za-z\-\.]+)$/ =~ name
+        first = fn
+        middle = mn
+        last = ln
+        parsed = true
+        parse_type = 99
+=begin
+      # M ERICSON
+      elsif name.match( /^([A-Za-z])\.? (#{last_name_p})$/i )
+        first  = $1
+        middle = ''
+        last   = $2
+        parsed = true
+        parse_type = 1
+
+        # M E ERICSON
+      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 2
+
+        # M.E. ERICSON
+      elsif name.match( /^([A-Za-z])\.([A-Za-z])\. (#{last_name_p})$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 3
+
+        # M E E ERICSON
+      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
+        first  = $1
+        middle = $2 + ' ' + $3
+        last   = $4
+        parsed = true
+        parse_type = 4
+
+        # M EDWARD ERICSON
+      elsif name.match( /^([A-Za-z])\.? ([#{@nc}]+) (#{last_name_p})$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 5
+
+        # MATTHEW E ERICSON
+      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? (#{last_name_p})$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 6
 
         # MATTHEW E.E. ERICSON
       elsif name.match( /^([#{@nc}]+) ([A-Za-z]\.[A-Za-z]\.) (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
+        first  = $1
+        middle = $2
+        last   = $3
         parsed = true
-        parse_type = 8;
+        parse_type = 8
+
+        # MATTHEW E. E. ERICSON
+      elsif name.match( /^([#{@nc}]+) ([A-Za-z]\. )+ (#{last_name_p})$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 15
+
+        # MATTHEW E E ERICSON
+      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
+        first  = $1
+        middle = $2 + ' ' + $3
+        last   = $4
+        parsed = true
+        parse_type = 7
 
         # MATTHEW ERICSON
       elsif name.match( /^([#{@nc}]+) (#{last_name_p})$/i )
-        first  = $1;
-        middle = '';
-        last   = $2;
+        first  = $1
+        middle = ''
+        last   = $2
         parsed = true
-        parse_type = 9;
+        parse_type = 9
 
         # MATTHEW EDWARD ERICSON
       elsif name.match( /^([#{@nc}]+) ([#{@nc}]+) (#{last_name_p})$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
+        first  = $1
+        middle = $2
+        last   = $3
         parsed = true
-        parse_type = 10;
+        parse_type = 10
 
         # MATTHEW E. SHEIE ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ($multNamePat)$/i )
-        first  = $1;
-        middle = $2;
-        last   = $3;
+      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ($mult_name_p)$/i )
+        first  = $1
+        middle = $2
+        last   = $3
         parsed = true
-        parse_type = 11;
+        parse_type = 11
+
+
+
+
+      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? (.*)$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 12
+
+        # Abaid Ullah A. Choudry
+      elsif name.match( /^([#{@nc}]+) (.* [A-Za-z])\.? (.*)$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 13
+
+        # Abdel Kader El Tal
+      elsif name.match( /^([#{@nc}]+) ([^ ]*)\.? (.*)$/i )
+        first  = $1
+        middle = $2
+        last   = $3
+        parsed = true
+        parse_type = 14
+=end
+
       end
 
       last.gsub!( /;/, "" )
@@ -449,7 +522,7 @@ module People
 
       # Now uppercase first letter of every word. By checking on word boundaries,
       # we will account for apostrophes (D'Angelo) and hyphenated names
-      fixed.gsub!( /\b(\w+)/ ) { |m| m.match( /^[ixv]$+/i ) ? m.upcase :  m.capitalize }
+      fixed.gsub!( /\b(\p{Word}+)/ ) { |m| m.match( /^[ixv]$+/i ) ? m.upcase :  m.capitalize }
 
       # Name case Macs and Mcs
       # Exclude names with 1-2 letters after prefix like Mack, Macky, Mace
