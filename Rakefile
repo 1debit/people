@@ -18,6 +18,8 @@ end
 
 task :default => :spec
 
+=begin
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
@@ -70,3 +72,4 @@ RDoc::Task.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
+=end

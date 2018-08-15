@@ -45,7 +45,7 @@ module People
       expect(name[:parsed]).to be true
       expect(name[:first]).to eq 'M'
       expect(name[:last]).to eq 'E'
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse first initial, last name" do
@@ -53,7 +53,7 @@ module People
       expect(name[:parsed]).to be true
       expect(name[:first]).to eq "M"
       expect(name[:last]).to eq "Ericson"
-      expect(name[:parse_type]).to eq 9 # 1
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse first initial, middle initial, last name" do
@@ -62,7 +62,7 @@ module People
       expect(name[:first]).to eq "M"
       expect(name[:middle]).to eq 'E'
       expect(name[:last]).to eq "Ericson"
-      expect(name[:parse_type]).to eq 6 # 2
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse first initial with period, middle initial with period, last name" do
@@ -107,7 +107,7 @@ module People
       expect(name[:first]).to eq "Matthew"
       expect(name[:middle]).to eq 'E'
       expect(name[:last]).to eq "Ericson"
-      expect(name[:parse_type]).to eq 6
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse first name, two middle initials, last name" do
@@ -142,7 +142,7 @@ module People
       expect(name[:parsed]).to be true
       expect(name[:first]).to eq "Matthew"
       expect(name[:last]).to eq "Ericson"
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse compound first name, last name" do
@@ -150,7 +150,7 @@ module People
       expect(name[:parsed]).to be true
       expect(name[:first]).to eq "Matthew-Joseph"
       expect(name[:last]).to eq "Ericson-Miller"
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse first name, middle name, last name" do
@@ -255,39 +255,39 @@ module People
       expect(name[:multiple]).to be true
       expect(name[:parsed2]).to be true
       expect(name[:first2]).to eq "Jill"
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 99
     end
-=begin
+
     it "should parse multiple first names and last name with UTF-8 characters" do
-      name = @np.parse("MARÍA AND JOSÉ GARCÍA-D'ANGELO III" )
+      name = @np.parse("MARÍA AND JOSÉ GARCÍA-D'ANGELO" )
       expect(name[:parsed]).to eq true
       expect(name[:multiple]).to be true
       expect(name[:parsed2]).to be true
       expect(name[:first]).to eq 'María'
       expect(name[:first2]).to eq 'José'
       expect(name[:last]).to eq "García-D'Angelo"
-      expect(name[:suffix]).to eq "III"
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 99
     end
-=end
+
     it "should parse multiple first names, middle initial, last name" do
       name = @np.parse( "Joe and Jill S Hill" )
       expect(name[:parsed]).to eq true
       expect(name[:multiple]).to be true
       expect(name[:parsed2]).to be true
-      expect(name[:parse_type]).to eq 9
       expect(name[:middle2]).to eq 'S'
       expect(name[:first2]).to eq "Jill"
+      expect(name[:parse_type]).to eq 99
     end
 
     it "should parse multiple first names, middle initial, last name" do
-      name = @np.parse( "Joe S and Jill Hill" )
+      name = @np.parse( "Joe S and Jill X Hill" )
       expect(name[:parsed]).to eq true
       expect(name[:multiple]).to be true
       expect(name[:parsed2]).to be true
       expect(name[:first2]).to eq "Jill"
       expect(name[:middle]).to eq 'S'
-      expect(name[:parse_type]).to eq 6
+      expect(name[:middle2]).to eq 'X'
+      expect(name[:parse_type]).to eq 98
     end
   end
 
@@ -300,14 +300,14 @@ module People
       name = @np.parse( "Matthew De La Hoya" )
       expect(name[:parsed]).to be true
       expect(name[:last]).to eq "De La Hoya"
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 0
     end
 
     it "should parse last name with cammel case" do
       name = @np.parse( "Matthew McIntosh" )
       expect(name[:parsed]).to be true
       expect(name[:last]).to eq "McIntosh"
-      expect(name[:parse_type]).to eq 9
+      expect(name[:parse_type]).to eq 0
     end
   end
 
