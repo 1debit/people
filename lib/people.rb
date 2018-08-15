@@ -154,7 +154,7 @@ module People
       @seen += 1
 
       clean  = ''
-      out = Hash.new( "" )
+      out = Hash.new( '' )
 
       out[:orig]  = name.dup
 
@@ -172,18 +172,14 @@ module People
       name.gsub!( /Mr\.? \& Mrs\.?/i, "Mr. and Mrs." )
 
       # Flip last and first if contain comma
-      name.gsub!( /;/, "" )
-      name.gsub!( /(.+),(.+)/, "\\2 ;\\1" )
-
-
-      name.gsub!( /,/, "" )
+      name.gsub!( /;/, '' )
+      name.gsub!( /(.+),(.+)/, "\\2 \\1" )
+      name.gsub!( /,/, '' )
       name.strip!
 
       if @opts[:couples]
-        name.gsub!( / +and +/i, " \& " )
+        name.gsub!( /\s+and\s+/i, ' & ' )
       end
-
-
 
       if @opts[:couples] && name.match( /\&/ )
 
@@ -208,7 +204,7 @@ module People
         out[:suffix] = get_suffix( a );
 
         a.strip!
-        a += " "
+        a += ' '
 
         parts = get_name_parts( a, true )
 
@@ -220,7 +216,7 @@ module People
         if out[:parsed] && out[:parsed2]
           out[:multiple] = true
         else
-          out = Hash.new( "" )
+          out = Hash.new( '' )
         end
 
 
@@ -262,24 +258,24 @@ module People
       out[:clean] = name
 
       return {
-        :title       => "",
-        :first       => "",
-        :middle      => "",
-        :last        => "",
-        :suffix      => "",
+        :title       => '',
+        :first       => '',
+        :middle      => '',
+        :last        => '',
+        :suffix      => '',
 
-        :title2      => "",
-        :first2      => "",
-        :middle2     => "",
-        :suffix2     => "",
+        :title2      => '',
+        :first2      => '',
+        :middle2     => '',
+        :suffix2     => '',
 
-        :clean       => "",
+        :clean       => '',
 
         :parsed      => false,
-        :parse_type  => "",
+        :parse_type  => '',
 
         :parsed2     => false,
-        :parse_type2 => "",
+        :parse_type2 => '',
 
         :multiple    => false
       }.merge( out )
@@ -290,7 +286,7 @@ module People
     def clean( s )
 
       # remove illegal characters
-#      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, "" ) # we don't want this, because it's stripping UTF-8 characters
+#      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, '' ) # we don't want this, because it's stripping UTF-8 characters
       # squish repeating spaces
       s.gsub!( /\s+/, ' ' )
       s.strip!
@@ -311,7 +307,7 @@ module People
 
       end
 
-      return ""
+      return ''
     end
 
     def get_suffix( name )
@@ -326,14 +322,14 @@ module People
 
       end
 
-      return ""
+      return ''
     end
 
     def get_name_parts( name, no_last_name = false )
 
-      first  = ""
-      middle = ""
-      last   = ""
+      first  = ''
+      middle = ''
+      last   = ''
 
       if no_last_name
         last_name_p = ''
@@ -369,14 +365,14 @@ module People
         parsed = true
         parse_type = 0
 
-        if /^(?<fn>[A-Za-z\-\.]+)[\s+\.](?<mn>([A-Za-z\-\.]+\s*)+)\s*$/ =~ name
+        if /^(?<fn>[\p{Word}\-\.]+)[\s+\.](?<mn>([\p{Word}\-\.]+\s*)+)\s*$/ =~ name
           first = fn
           middle = mn
         end
 
       # just as a fall-back -- nothing should need this rule
 
-      elsif  /^(?<fn>[A-Za-z\-\.]+)[\s+\.](?<mn>([A-Za-z\-\.]+\s*)+)\s+(?<ln>[A-Za-z\-\.]+)$/ =~ name
+      elsif  /^(?<fn>[\p{Word}\-\.]+)[\s+\.](?<mn>([\p{Word}\-\.]+\s*)+)\s+(?<ln>[\p{Word}\-\.]+)$/ =~ name
         first = fn
         middle = mn
         last = ln
@@ -385,7 +381,7 @@ module People
 
       end
 
-      last.gsub!( /;/, "" )
+      last.gsub!( /;/, '' )
 
       return [ parsed, parse_type, first, middle, last ];
 
